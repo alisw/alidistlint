@@ -111,6 +111,7 @@ def get_schema_for_file(file_name: str) -> dict:
     }
 
     environment = environment_schema(allow_list_values=False)
+    track_environment = environment_schema(allow_list_values=False)
     path_environment = environment_schema(allow_list_values=True)
 
     # This contains the common fields allowed in both override: and
@@ -123,6 +124,7 @@ def get_schema_for_file(file_name: str) -> dict:
         'requires': requires,
         'build_requires': requires,
         'env': environment,
+        'track_env': track_environment,
         'valid_defaults': {'type': 'list', 'schema': {'type': 'string'}},
         'tools': {'type': 'list', 'schema': {'type': 'string'}},
         'prepend_path': path_environment,
