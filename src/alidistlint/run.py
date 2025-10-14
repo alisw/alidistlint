@@ -11,7 +11,7 @@ from alidistlint import common, git, __version__
 from alidistlint.headerlint import headerlint
 from alidistlint.scriptlint import scriptlint
 from alidistlint.yamllint import yamllint
-from alidistlint.shellcheck import shellcheck
+from alidistlint.shellcheck import shellcheck, shellcheck_autofix
 
 
 def run_with_args(args: Namespace) -> int:
@@ -25,8 +25,21 @@ def run_with_args(args: Namespace) -> int:
     if repo_dir is not None and args.changes is not None:
         changed_lines = git.added_lines(repo_dir, args.changes)
 
+    if getattr(args, 'fix', False) and not args.no_shellcheck:
+        regular_files = [f.name for f in args.recipes if f.name != '<stdin>']
+        if regular_files:
+            fixes_applied = shellcheck_autofix(regular_files)
+            if fixes_applied:
+                # Close and reopen files to get updated content
+                for f in args.recipes:
+                    if f.name != '<stdin>':
+                        f.close()
+                args.recipes = [open(f.name, 'rb') if f.name != '<stdin>' else f 
+                               for f in args.recipes]
+
     with tempfile.TemporaryDirectory(prefix=progname) as tempdir:
         errors, headers, scripts = common.split_files(tempdir, args.recipes)
+        
         errors = itertools.chain(
             errors,
             () if args.no_headerlint else headerlint(headers),
@@ -94,6 +107,8 @@ def parse_args() -> Namespace:
                         choices=common.ERROR_FORMATTERS.keys(), default='gcc',
                         help=('format of error messages '
                               '(one of %(choices)s; default %(default)s)'))
+    parser.add_argument('--fix', action='store_true',
+                        help='automatically apply shellcheck fixes to files')
     parser.add_argument('recipes', metavar='RECIPE', nargs='+',
                         type=FileType('rb'),
                         help='a file name to check (use - for stdin)')
