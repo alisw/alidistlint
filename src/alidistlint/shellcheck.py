@@ -21,6 +21,8 @@ ENABLED_OPTIONAL_CHECKS = ','.join((
 DISABLED_CHECKS = ','.join((
     # "Not following: * was not specified as input (see shellcheck -x)."
     'SC1091',
+    # "Double quote to prevent globbing and word splitting."
+    'SC2086' 
 ))
 
 
