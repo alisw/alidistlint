@@ -125,6 +125,7 @@ def get_schema_for_file(file_name: str) -> dict:
         'env': environment,
         'valid_defaults': {'type': 'list', 'schema': {'type': 'string'}},
         'tools': {'type': 'list', 'schema': {'type': 'string'}},
+        'license': {'type': 'string'},
         'prepend_path': path_environment,
         'append_path': path_environment,
         'force_rebuild': {'type': 'boolean'},
